@@ -77,8 +77,8 @@ Integration tests will be added once Testcontainers is wired up.
 - [x] URL validation with SSRF protection
 - [x] RFC 7807 `ProblemDetails` error handling
 - [x] Expiring / one-time / password-protected link support
-- [ ] Click tracking, stats and delete endpoints
-- [ ] In-memory caching, IP-based rate limiting
+- [x] Click tracking, stats and delete endpoints
+- [x] In-memory caching, IP-based rate limiting
 - [ ] Dockerfile + Docker Compose
 - [ ] Testcontainers-based integration tests
 - [ ] GitHub Actions CI
