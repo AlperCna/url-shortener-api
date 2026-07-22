@@ -12,9 +12,12 @@ public interface IShortLinkService
         string originalUrl,
         DateTimeOffset? expiresAt,
         bool isOneTime,
+        string? password,
         CancellationToken cancellationToken = default);
 
     Task<ShortLink?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
+
+    bool VerifyPassword(ShortLink shortLink, string password);
 
     /// <summary>
     /// Records a click and persists it. Deactivates the link if it is one-time.

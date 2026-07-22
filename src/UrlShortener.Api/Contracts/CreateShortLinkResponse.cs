@@ -6,4 +6,5 @@ public record CreateShortLinkResponse(
     string OriginalUrl,
     DateTimeOffset CreatedAt,
     DateTimeOffset? ExpiresAt,
-    bool IsOneTime);
+    bool IsOneTime,
+    bool HasPassword);

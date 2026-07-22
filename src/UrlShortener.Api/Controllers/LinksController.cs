@@ -28,13 +28,18 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
             ModelState.AddModelError(nameof(request.ExpiresAt), "ExpiresAt must be in the future.");
         }
 
+        if (request.Password is not null && string.IsNullOrWhiteSpace(request.Password))
+        {
+            ModelState.AddModelError(nameof(request.Password), "Password cannot be blank.");
+        }
+
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
         var shortLink = await shortLinkService.CreateAsync(
-            request.Url, request.ExpiresAt, request.IsOneTime, cancellationToken);
+            request.Url, request.ExpiresAt, request.IsOneTime, request.Password, cancellationToken);
 
         var shortUrl = $"{Request.Scheme}://{Request.Host}/{shortLink.Code}";
         var response = new CreateShortLinkResponse(
@@ -43,7 +48,8 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
             shortLink.OriginalUrl,
             shortLink.CreatedAt,
             shortLink.ExpiresAt,
-            shortLink.IsOneTime);
+            shortLink.IsOneTime,
+            shortLink.HasPassword);
 
         return Created(shortUrl, response);
     }

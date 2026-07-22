@@ -11,9 +11,13 @@ public class RedirectController(IShortLinkService shortLinkService, TimeProvider
     // (added later) would stop working.
     [HttpGet("/{code:regex(^[0-9a-zA-Z]{{7}}$)}")]
     [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status410Gone)]
-    public async Task<IActionResult> RedirectToOriginalUrl(string code, CancellationToken cancellationToken)
+    public async Task<IActionResult> RedirectToOriginalUrl(
+        string code,
+        [FromQuery] string? password,
+        CancellationToken cancellationToken)
     {
         var shortLink = await shortLinkService.GetByCodeAsync(code, cancellationToken);
 
@@ -25,6 +29,19 @@ public class RedirectController(IShortLinkService shortLinkService, TimeProvider
         if (!shortLink.IsAccessible(timeProvider.GetUtcNow()))
         {
             return Problem(statusCode: StatusCodes.Status410Gone, title: "This link is no longer available.");
+        }
+
+        if (shortLink.HasPassword)
+        {
+            if (string.IsNullOrEmpty(password))
+            {
+                return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "A password is required to access this link.");
+            }
+
+            if (!shortLinkService.VerifyPassword(shortLink, password))
+            {
+                return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Incorrect password.");
+            }
         }
 
         await shortLinkService.RegisterClickAsync(shortLink, cancellationToken);

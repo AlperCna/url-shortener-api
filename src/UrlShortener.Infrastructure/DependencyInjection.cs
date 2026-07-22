@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UrlShortener.Core.Repositories;
+using UrlShortener.Core.Security;
 using UrlShortener.Infrastructure.Persistence;
 using UrlShortener.Infrastructure.Repositories;
+using UrlShortener.Infrastructure.Security;
 
 namespace UrlShortener.Infrastructure;
 
@@ -17,6 +19,7 @@ public static class DependencyInjection
         services.AddDbContext<UrlShortenerDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IShortLinkRepository, ShortLinkRepository>();
+        services.AddSingleton<IPasswordHasher, PasswordHasherAdapter>();
 
         return services;
     }
