@@ -11,7 +11,13 @@ public interface IShortLinkService
     Task<ShortLink> CreateAsync(
         string originalUrl,
         DateTimeOffset? expiresAt,
+        bool isOneTime,
         CancellationToken cancellationToken = default);
 
     Task<ShortLink?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Records a click and persists it. Deactivates the link if it is one-time.
+    /// </summary>
+    Task RegisterClickAsync(ShortLink shortLink, CancellationToken cancellationToken = default);
 }

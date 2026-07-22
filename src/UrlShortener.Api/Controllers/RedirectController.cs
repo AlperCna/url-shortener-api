@@ -27,6 +27,8 @@ public class RedirectController(IShortLinkService shortLinkService, TimeProvider
             return Problem(statusCode: StatusCodes.Status410Gone, title: "This link is no longer available.");
         }
 
+        await shortLinkService.RegisterClickAsync(shortLink, cancellationToken);
+
         return Redirect(shortLink.OriginalUrl);
     }
 }

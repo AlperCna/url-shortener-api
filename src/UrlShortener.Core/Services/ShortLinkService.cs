@@ -12,10 +12,11 @@ public class ShortLinkService(IShortLinkRepository repository, TimeProvider time
     public async Task<ShortLink> CreateAsync(
         string originalUrl,
         DateTimeOffset? expiresAt,
+        bool isOneTime,
         CancellationToken cancellationToken = default)
     {
         var code = await GenerateUniqueCodeAsync(cancellationToken);
-        var shortLink = ShortLink.Create(code, originalUrl, timeProvider.GetUtcNow(), expiresAt);
+        var shortLink = ShortLink.Create(code, originalUrl, timeProvider.GetUtcNow(), expiresAt, isOneTime);
 
         await repository.AddAsync(shortLink, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
@@ -25,6 +26,12 @@ public class ShortLinkService(IShortLinkRepository repository, TimeProvider time
 
     public Task<ShortLink?> GetByCodeAsync(string code, CancellationToken cancellationToken = default) =>
         repository.GetByCodeAsync(code, cancellationToken);
+
+    public async Task RegisterClickAsync(ShortLink shortLink, CancellationToken cancellationToken = default)
+    {
+        shortLink.RegisterClick(timeProvider.GetUtcNow());
+        await repository.SaveChangesAsync(cancellationToken);
+    }
 
     private async Task<string> GenerateUniqueCodeAsync(CancellationToken cancellationToken)
     {

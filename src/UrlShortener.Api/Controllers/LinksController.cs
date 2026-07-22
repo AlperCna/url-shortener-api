@@ -33,7 +33,8 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
             return ValidationProblem(ModelState);
         }
 
-        var shortLink = await shortLinkService.CreateAsync(request.Url, request.ExpiresAt, cancellationToken);
+        var shortLink = await shortLinkService.CreateAsync(
+            request.Url, request.ExpiresAt, request.IsOneTime, cancellationToken);
 
         var shortUrl = $"{Request.Scheme}://{Request.Host}/{shortLink.Code}";
         var response = new CreateShortLinkResponse(
@@ -41,7 +42,8 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
             shortUrl,
             shortLink.OriginalUrl,
             shortLink.CreatedAt,
-            shortLink.ExpiresAt);
+            shortLink.ExpiresAt,
+            shortLink.IsOneTime);
 
         return Created(shortUrl, response);
     }

@@ -5,4 +5,5 @@ public record CreateShortLinkResponse(
     string ShortUrl,
     string OriginalUrl,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? ExpiresAt);
+    DateTimeOffset? ExpiresAt,
+    bool IsOneTime);
