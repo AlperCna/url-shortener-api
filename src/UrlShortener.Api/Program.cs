@@ -79,3 +79,7 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
+
+// Exposes the entry point to WebApplicationFactory<Program> in the
+// integration test project.
+public partial class Program;
