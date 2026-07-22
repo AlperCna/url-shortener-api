@@ -1,3 +1,4 @@
+using UrlShortener.Api.BackgroundProcessing;
 using UrlShortener.Api.ErrorHandling;
 using UrlShortener.Core.Services;
 using UrlShortener.Infrastructure;
@@ -14,6 +15,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IShortLinkService, ShortLinkService>();
+
+builder.Services.AddSingleton<ClickTrackingQueue>();
+builder.Services.AddSingleton<IClickTrackingQueue>(sp => sp.GetRequiredService<ClickTrackingQueue>());
+builder.Services.AddHostedService<ClickTrackingBackgroundService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

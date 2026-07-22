@@ -1,14 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
+using UrlShortener.Api.BackgroundProcessing;
 using UrlShortener.Core.Services;
 
 namespace UrlShortener.Api.Controllers;
 
 [ApiController]
-public class RedirectController(IShortLinkService shortLinkService, TimeProvider timeProvider) : ControllerBase
+public class RedirectController(
+    IShortLinkService shortLinkService,
+    IClickTrackingQueue clickTrackingQueue,
+    TimeProvider timeProvider) : ControllerBase
 {
     // 302, not 301: a permanent redirect gets cached by the browser, so
     // repeat visits never reach the server again and the click counter
-    // (added later) would stop working.
+    // would stop working.
     [HttpGet("/{code:regex(^[0-9a-zA-Z]{{7}}$)}")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -44,7 +48,19 @@ public class RedirectController(IShortLinkService shortLinkService, TimeProvider
             }
         }
 
-        await shortLinkService.RegisterClickAsync(shortLink, cancellationToken);
+        if (shortLink.IsOneTime)
+        {
+            // Deactivation gates future access, so it must happen before we
+            // redirect - queuing it would let a second concurrent request
+            // through before the first click is recorded.
+            await shortLinkService.RegisterClickAsync(shortLink, cancellationToken);
+        }
+        else
+        {
+            // A plain click count is just a statistic - fine to lag behind
+            // by a few milliseconds, not worth blocking the redirect for.
+            clickTrackingQueue.Enqueue(shortLink.Code);
+        }
 
         return Redirect(shortLink.OriginalUrl);
     }
