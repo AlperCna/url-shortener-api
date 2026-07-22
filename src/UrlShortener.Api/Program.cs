@@ -1,4 +1,5 @@
 using UrlShortener.Api.ErrorHandling;
+using UrlShortener.Core.Services;
 using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IShortLinkService, ShortLinkService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
