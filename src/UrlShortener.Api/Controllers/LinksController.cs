@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using UrlShortener.Api.Contracts;
 using UrlShortener.Core.Services;
 using UrlShortener.Core.Validation;
@@ -10,8 +11,10 @@ namespace UrlShortener.Api.Controllers;
 public class LinksController(IShortLinkService shortLinkService, TimeProvider timeProvider) : ControllerBase
 {
     [HttpPost]
+    [EnableRateLimiting(RateLimitPolicies.LinkCreation)]
     [ProducesResponseType<CreateShortLinkResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CreateShortLinkResponse>> Create(
         [FromBody] CreateShortLinkRequest request,
         CancellationToken cancellationToken)
