@@ -9,10 +9,13 @@ public class ShortLinkService(IShortLinkRepository repository, TimeProvider time
 {
     private const int MaxCodeGenerationAttempts = 3;
 
-    public async Task<ShortLink> CreateAsync(string originalUrl, CancellationToken cancellationToken = default)
+    public async Task<ShortLink> CreateAsync(
+        string originalUrl,
+        DateTimeOffset? expiresAt,
+        CancellationToken cancellationToken = default)
     {
         var code = await GenerateUniqueCodeAsync(cancellationToken);
-        var shortLink = ShortLink.Create(code, originalUrl, timeProvider.GetUtcNow());
+        var shortLink = ShortLink.Create(code, originalUrl, timeProvider.GetUtcNow(), expiresAt);
 
         await repository.AddAsync(shortLink, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);

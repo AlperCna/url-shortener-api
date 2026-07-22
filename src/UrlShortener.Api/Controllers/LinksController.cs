@@ -7,7 +7,7 @@ namespace UrlShortener.Api.Controllers;
 
 [ApiController]
 [Route("api/links")]
-public class LinksController(IShortLinkService shortLinkService) : ControllerBase
+public class LinksController(IShortLinkService shortLinkService, TimeProvider timeProvider) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType<CreateShortLinkResponse>(StatusCodes.Status201Created)]
@@ -21,13 +21,27 @@ public class LinksController(IShortLinkService shortLinkService) : ControllerBas
         if (!validation.IsValid)
         {
             ModelState.AddModelError(nameof(request.Url), DescribeError(validation.Error!.Value));
+        }
+
+        if (request.ExpiresAt is not null && request.ExpiresAt <= timeProvider.GetUtcNow())
+        {
+            ModelState.AddModelError(nameof(request.ExpiresAt), "ExpiresAt must be in the future.");
+        }
+
+        if (!ModelState.IsValid)
+        {
             return ValidationProblem(ModelState);
         }
 
-        var shortLink = await shortLinkService.CreateAsync(request.Url, cancellationToken);
+        var shortLink = await shortLinkService.CreateAsync(request.Url, request.ExpiresAt, cancellationToken);
 
         var shortUrl = $"{Request.Scheme}://{Request.Host}/{shortLink.Code}";
-        var response = new CreateShortLinkResponse(shortLink.Code, shortUrl, shortLink.OriginalUrl, shortLink.CreatedAt);
+        var response = new CreateShortLinkResponse(
+            shortLink.Code,
+            shortUrl,
+            shortLink.OriginalUrl,
+            shortLink.CreatedAt,
+            shortLink.ExpiresAt);
 
         return Created(shortUrl, response);
     }
