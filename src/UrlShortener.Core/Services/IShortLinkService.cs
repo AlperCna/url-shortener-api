@@ -23,4 +23,7 @@ public interface IShortLinkService
     /// Records a click and persists it. Deactivates the link if it is one-time.
     /// </summary>
     Task RegisterClickAsync(ShortLink shortLink, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns false if no link with that code exists.</summary>
+    Task<bool> DeleteAsync(string code, CancellationToken cancellationToken = default);
 }

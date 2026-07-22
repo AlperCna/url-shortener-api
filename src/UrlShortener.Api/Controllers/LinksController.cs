@@ -54,6 +54,37 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
         return Created(shortUrl, response);
     }
 
+    [HttpGet("{code}/stats")]
+    [ProducesResponseType<ShortLinkStatsResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShortLinkStatsResponse>> GetStats(string code, CancellationToken cancellationToken)
+    {
+        var shortLink = await shortLinkService.GetByCodeAsync(code, cancellationToken);
+
+        if (shortLink is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new ShortLinkStatsResponse(
+            shortLink.Code,
+            shortLink.ClickCount,
+            shortLink.CreatedAt,
+            shortLink.ExpiresAt,
+            shortLink.IsOneTime,
+            shortLink.IsActive));
+    }
+
+    [HttpDelete("{code}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(string code, CancellationToken cancellationToken)
+    {
+        var deleted = await shortLinkService.DeleteAsync(code, cancellationToken);
+
+        return deleted ? NoContent() : NotFound();
+    }
+
     private static string DescribeError(UrlValidationError error) => error switch
     {
         UrlValidationError.Empty => "The URL is required.",

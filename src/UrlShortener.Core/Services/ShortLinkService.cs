@@ -49,6 +49,21 @@ public class ShortLinkService(
         await repository.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<bool> DeleteAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var shortLink = await repository.GetByCodeAsync(code, cancellationToken);
+
+        if (shortLink is null)
+        {
+            return false;
+        }
+
+        repository.Remove(shortLink);
+        await repository.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
     private async Task<string> GenerateUniqueCodeAsync(CancellationToken cancellationToken)
     {
         for (var attempt = 1; attempt <= MaxCodeGenerationAttempts; attempt++)
