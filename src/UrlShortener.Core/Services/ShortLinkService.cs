@@ -46,6 +46,7 @@ public class ShortLinkService(
     public async Task RegisterClickAsync(ShortLink shortLink, CancellationToken cancellationToken = default)
     {
         shortLink.RegisterClick(timeProvider.GetUtcNow());
+        repository.Update(shortLink);
         await repository.SaveChangesAsync(cancellationToken);
     }
 

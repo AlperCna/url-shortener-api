@@ -29,6 +29,10 @@ public class CollisionCountingRepository(int collisionsBeforeSuccess) : IShortLi
         return Task.CompletedTask;
     }
 
+    public void Update(ShortLink shortLink)
+    {
+    }
+
     public void Remove(ShortLink shortLink)
     {
     }

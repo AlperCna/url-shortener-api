@@ -21,6 +21,14 @@ public class InMemoryShortLinkRepository : IShortLinkRepository
         return Task.CompletedTask;
     }
 
+    public void Update(ShortLink shortLink)
+    {
+        if (!_links.Contains(shortLink))
+        {
+            _links.Add(shortLink);
+        }
+    }
+
     public void Remove(ShortLink shortLink) => _links.Remove(shortLink);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;

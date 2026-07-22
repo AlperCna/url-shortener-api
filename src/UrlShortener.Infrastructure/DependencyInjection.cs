@@ -18,7 +18,9 @@ public static class DependencyInjection
 
         services.AddDbContext<UrlShortenerDbContext>(options => options.UseNpgsql(connectionString));
 
-        services.AddScoped<IShortLinkRepository, ShortLinkRepository>();
+        services.AddMemoryCache();
+        services.AddScoped<ShortLinkRepository>();
+        services.AddScoped<IShortLinkRepository, CachedShortLinkRepository>();
         services.AddSingleton<IPasswordHasher, PasswordHasherAdapter>();
 
         return services;

@@ -19,6 +19,18 @@ public class ShortLinkRepository(UrlShortenerDbContext dbContext) : IShortLinkRe
         return Task.CompletedTask;
     }
 
+    public void Update(ShortLink shortLink)
+    {
+        // Already tracked (the common case: fetched and mutated within this
+        // same scope) -> EF's change tracker already sees the mutation.
+        // Detached (fetched from cache in a different scope) -> attach it
+        // and mark it Modified so the mutation actually gets saved.
+        if (dbContext.Entry(shortLink).State == EntityState.Detached)
+        {
+            dbContext.ShortLinks.Update(shortLink);
+        }
+    }
+
     public void Remove(ShortLink shortLink) => dbContext.ShortLinks.Remove(shortLink);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
