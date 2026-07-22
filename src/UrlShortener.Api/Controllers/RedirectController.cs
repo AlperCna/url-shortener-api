@@ -13,7 +13,11 @@ public class RedirectController(
     // 302, not 301: a permanent redirect gets cached by the browser, so
     // repeat visits never reach the server again and the click counter
     // would stop working.
-    [HttpGet("/{code:regex(^[0-9a-zA-Z]{{7}}$)}")]
+    // Square brackets and braces are both escaped by doubling ([[ ]] and
+    // {{ }}) - the attribute route template parser treats unescaped [...]
+    // as an [area]/[controller]/[action] token to substitute, which would
+    // otherwise collide with the regex character class here.
+    [HttpGet("/{code:regex(^[[0-9a-zA-Z]]{{7}}$)}")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

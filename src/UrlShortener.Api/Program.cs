@@ -1,10 +1,12 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UrlShortener.Api;
 using UrlShortener.Api.BackgroundProcessing;
 using UrlShortener.Api.ErrorHandling;
 using UrlShortener.Core.Services;
 using UrlShortener.Infrastructure;
+using UrlShortener.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,16 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
+// Apply pending migrations on startup so `docker compose up` produces a
+// working app with no manual database step. A separately-run migration
+// step would be the production-grade approach; this is a deliberate
+// simplification for a demo-sized project.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<UrlShortenerDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
