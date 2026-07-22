@@ -62,20 +62,21 @@ async click tracking) will be documented here as those pieces land — see the
 dotnet test
 ```
 
-Currently: 32 unit tests covering the Base62 code generator and the
-`ShortLink` domain rules (expiration, one-time use, password state).
-Integration tests will be added once the data and API layers exist.
+Currently: 80 unit tests covering the Base62 code generator, the
+`ShortLink` domain rules, URL/SSRF validation, and `ShortLinkService`
+(code retry, expiry, one-time deactivation, password hashing).
+Integration tests will be added once Testcontainers is wired up.
 
 ## Roadmap
 
 - [x] Solution skeleton (Api / Core / Infrastructure + test projects)
 - [x] Base62 random code generator
 - [x] `ShortLink` domain entity and rules
-- [ ] EF Core DbContext, entity configuration, unique index, migrations
-- [ ] Link creation and redirect endpoints
-- [ ] URL validation with SSRF protection
-- [ ] RFC 7807 `ProblemDetails` error handling
-- [ ] Expiring / one-time / password-protected link support
+- [x] EF Core DbContext, entity configuration, unique index, migrations
+- [x] Link creation and redirect endpoints
+- [x] URL validation with SSRF protection
+- [x] RFC 7807 `ProblemDetails` error handling
+- [x] Expiring / one-time / password-protected link support
 - [ ] Click tracking, stats and delete endpoints
 - [ ] In-memory caching, IP-based rate limiting
 - [ ] Dockerfile + Docker Compose
