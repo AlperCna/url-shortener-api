@@ -1,22 +1,22 @@
 # URL Shortener API
 
+[![CI](https://github.com/AlperCna/url-shortener-api/actions/workflows/ci.yml/badge.svg)](https://github.com/AlperCna/url-shortener-api/actions/workflows/ci.yml)
+
 A URL shortener REST API built with ASP.NET Core and PostgreSQL — written as a
 portfolio project with an emphasis on clean layering, test coverage, and
 documented design decisions, not just working code.
 
-> **Status: early development.** The project is being built incrementally,
-> one reviewable commit at a time. This README tracks what's actually done —
-> see the [Roadmap](#roadmap) for what's still ahead.
-
-## Planned features
+## Features
 
 - `POST /api/links` — shorten a URL
-- `GET /{code}` — redirect to the original URL
-- `GET /api/links/{code}/stats` — click count and creation date
+- `GET /{code}` — redirect to the original URL (`302`)
+- `GET /api/links/{code}/stats` — click count and current state
 - `DELETE /api/links/{code}` — remove a link
 - **Expiring links** — `expiresAt`; requests to an expired link return `410 Gone`
 - **One-time links** — `isOneTime: true` deactivates the link after its first click
 - **Password-protected links** — a password is required before redirecting
+- SSRF-resistant URL validation, RFC 7807 `ProblemDetails` error responses,
+  IP-based rate limiting on link creation, and a non-blocking click counter
 
 ## Tech stack
 
@@ -42,6 +42,46 @@ Deliberately three projects, not five. No MediatR/CQRS/AutoMapper — the
 domain is small enough that those would add indirection without adding
 clarity.
 
+```mermaid
+flowchart LR
+    Client -->|HTTP| Api[UrlShortener.Api]
+    Api --> Core[UrlShortener.Core]
+    Api --> Infra[UrlShortener.Infrastructure]
+    Infra --> Core
+    Infra -->|EF Core| DB[(PostgreSQL)]
+    Infra --> Cache[(IMemoryCache)]
+    Api -->|non-one-time clicks| Queue[Click tracking queue]
+    Queue --> BgService[ClickTrackingBackgroundService]
+    BgService --> Infra
+```
+
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/links` | Create a short link |
+| `GET` | `/{code}` | Redirect to the original URL |
+| `GET` | `/api/links/{code}/stats` | Click count and current state |
+| `DELETE` | `/api/links/{code}` | Delete a link |
+
+Full request/response schemas and try-it-out are in Swagger UI at `/swagger`
+once the app is running.
+
+```bash
+# Create a link (expiresAt, isOneTime and password are all optional)
+curl -X POST localhost:8080/api/links -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/very/long/path"}'
+
+# Follow it
+curl -i localhost:8080/aB3xK9c   # 302
+
+# Stats
+curl localhost:8080/api/links/aB3xK9c/stats
+
+# Password-protected link
+curl -i "localhost:8080/aB3xK9c?password=hunter2"
+```
+
 ## Running with Docker
 
 ```bash
@@ -50,13 +90,7 @@ docker compose up --build
 
 Starts Postgres and the API (`http://localhost:8080`); pending EF Core
 migrations are applied automatically on startup, so there's no separate
-database setup step.
-
-```bash
-curl -X POST localhost:8080/api/links -H "Content-Type: application/json" \
-  -d '{"url":"https://example.com/very/long/path"}'
-curl -i localhost:8080/aB3xK9c   # 302
-```
+database setup step. Swagger UI is at `http://localhost:8080/swagger`.
 
 ## Design decisions
 
@@ -112,23 +146,6 @@ real API against a disposable Postgres container via Testcontainers —
 covering create, redirect status codes, one-time deactivation, password
 auth, delete, SSRF rejection, and the async click counter. The integration
 tests need Docker running locally.
-
-## Roadmap
-
-- [x] Solution skeleton (Api / Core / Infrastructure + test projects)
-- [x] Base62 random code generator
-- [x] `ShortLink` domain entity and rules
-- [x] EF Core DbContext, entity configuration, unique index, migrations
-- [x] Link creation and redirect endpoints
-- [x] URL validation with SSRF protection
-- [x] RFC 7807 `ProblemDetails` error handling
-- [x] Expiring / one-time / password-protected link support
-- [x] Click tracking, stats and delete endpoints
-- [x] In-memory caching, IP-based rate limiting
-- [x] Dockerfile + Docker Compose
-- [x] Testcontainers-based integration tests
-- [ ] GitHub Actions CI
-- [ ] Swagger/OpenAPI documentation
 
 ## License
 
