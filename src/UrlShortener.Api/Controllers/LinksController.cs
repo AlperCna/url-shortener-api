@@ -12,6 +12,11 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
 {
     [HttpPost]
     [EnableRateLimiting(RateLimitPolicies.LinkCreation)]
+    [EndpointSummary("Create a short link")]
+    [EndpointDescription(
+        "Shortens a URL, optionally with an expiration, one-time use, or a password. " +
+        "Rejects localhost, loopback and private-network targets to prevent SSRF. " +
+        "Rate limited to 20 requests per minute per IP.")]
     [ProducesResponseType<CreateShortLinkResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
@@ -58,6 +63,8 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
     }
 
     [HttpGet("{code}/stats")]
+    [EndpointSummary("Get click stats for a link")]
+    [EndpointDescription("Returns click count and current state, regardless of whether the link is still active.")]
     [ProducesResponseType<ShortLinkStatsResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShortLinkStatsResponse>> GetStats(string code, CancellationToken cancellationToken)
@@ -79,6 +86,7 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
     }
 
     [HttpDelete("{code}")]
+    [EndpointSummary("Delete a link")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(string code, CancellationToken cancellationToken)

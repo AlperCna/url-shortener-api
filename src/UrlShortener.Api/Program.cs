@@ -14,7 +14,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "URL Shortener API";
+        document.Info.Description =
+            "Shortens URLs, with optional expiration, one-time use, and password protection.";
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -63,10 +72,16 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+// Exposed unconditionally, not just in Development: this is a demo/portfolio
+// project meant to be inspected by whoever runs `docker compose up`, so the
+// docs should be reachable without setting ASPNETCORE_ENVIRONMENT.
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
-}
+    options.SwaggerEndpoint("/openapi/v1.json", "URL Shortener API v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.UseExceptionHandler();
 

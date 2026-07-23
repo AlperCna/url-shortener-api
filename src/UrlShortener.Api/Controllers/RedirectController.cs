@@ -18,6 +18,10 @@ public class RedirectController(
     // as an [area]/[controller]/[action] token to substitute, which would
     // otherwise collide with the regex character class here.
     [HttpGet("/{code:regex(^[[0-9a-zA-Z]]{{7}}$)}")]
+    [EndpointSummary("Redirect to the original URL")]
+    [EndpointDescription(
+        "Pass ?password=... for password-protected links. Returns 410 Gone once a link " +
+        "has expired or a one-time link has already been used.")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
