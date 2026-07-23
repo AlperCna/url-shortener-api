@@ -44,7 +44,6 @@ public class UrlValidatorTests
     [Theory]
     [InlineData("not a url")]
     [InlineData("example.com")]
-    [InlineData("/relative/path")]
     public void Validate_MalformedUrl_FailsWithInvalidFormat(string url)
     {
         var result = UrlValidator.Validate(url);
@@ -64,6 +63,18 @@ public class UrlValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Error.Should().Be(UrlValidationError.UnsupportedScheme);
+    }
+
+    [Fact]
+    public void Validate_RelativePath_IsRejectedRegardlessOfWhichReason()
+    {
+        // Uri.TryCreate(..., UriKind.Absolute) treats a leading-slash string
+        // as a Unix absolute path (-> file://) on Linux but fails outright
+        // on Windows, so this checks the one thing guaranteed on both: the
+        // URL never passes validation.
+        var result = UrlValidator.Validate("/relative/path");
+
+        result.IsValid.Should().BeFalse();
     }
 
     [Theory]

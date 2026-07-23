@@ -70,7 +70,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
+// No UseHttpsRedirection(): the container only ever listens on plain HTTP
+// (see docker-compose.yml). TLS termination is a reverse proxy's job in
+// front of this, not something the app itself should assume or enforce.
 
 app.UseAuthorization();
 
