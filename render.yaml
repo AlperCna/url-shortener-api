@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: url-shortener-api
+    runtime: docker
+    dockerfilePath: src/UrlShortener.Api/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /swagger/index.html
+    envVars:
+      - key: ConnectionStrings__UrlShortenerDb
+        fromDatabase:
+          name: url-shortener-db
+          property: connectionString
+
+databases:
+  - name: url-shortener-db
+    plan: free
+    databaseName: urlshortener
+    user: urlshortener

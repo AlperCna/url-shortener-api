@@ -15,6 +15,7 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("UrlShortenerDb")
             ?? throw new InvalidOperationException("Connection string 'UrlShortenerDb' is not configured.");
+        connectionString = ConnectionStringNormalizer.ToNpgsqlConnectionString(connectionString);
 
         services.AddDbContext<UrlShortenerDbContext>(options => options.UseNpgsql(connectionString));
 
