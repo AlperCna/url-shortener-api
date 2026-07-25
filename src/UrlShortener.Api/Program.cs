@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Api;
@@ -72,6 +73,21 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+
+// Must run first: behind a reverse proxy (Render, or any real deployment),
+// Kestrel only ever sees plain HTTP from the proxy, and the client's real IP
+// shows up as the proxy's IP. Without this, Request.Scheme is always "http"
+// (breaking the shortUrl the create endpoint builds) and the per-IP rate
+// limiter partitions everyone together under the proxy's address. Trusting
+// forwarded headers from any proxy is fine here specifically because the
+// container is never reachable except through Render's edge network.
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+};
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 // Exposed unconditionally, not just in Development: this is a demo/portfolio
 // project meant to be inspected by whoever runs `docker compose up`, so the
