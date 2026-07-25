@@ -6,6 +6,10 @@ A URL shortener REST API built with ASP.NET Core and PostgreSQL — written as a
 portfolio project with an emphasis on clean layering, test coverage, and
 documented design decisions, not just working code.
 
+**Live demo:** [url-shortener-api-czrb.onrender.com/swagger](https://url-shortener-api-czrb.onrender.com/swagger)
+— hosted on Render's free tier, so it spins down after inactivity; the first
+request after a while can take 30-50s to wake it back up.
+
 ## Features
 
 - `POST /api/links` — shorten a URL
@@ -134,13 +138,22 @@ saving to close that gap.
 **No Redis.** `IMemoryCache` is enough at this scale; a distributed cache
 only earns its complexity once the API runs on more than one instance.
 
+**Trusting forwarded headers, but only because of where this runs.**
+Deployed behind Render's edge proxy, Kestrel only ever sees plain HTTP and
+the proxy's IP as the caller — without `UseForwardedHeaders`, the create
+endpoint built `http://` short URLs on an `https://` deployment, and the
+per-IP rate limiter grouped every visitor under the same address. Trusting
+`X-Forwarded-*` from *any* proxy is a real risk in general (IP spoofing) but
+fine here specifically because the container is only ever reachable through
+Render's network, never directly by IP.
+
 ## Running the tests
 
 ```bash
 dotnet test
 ```
 
-80 unit tests (Base62 generator, `ShortLink` domain rules, URL/SSRF
+85 unit tests (Base62 generator, `ShortLink` domain rules, URL/SSRF
 validation, `ShortLinkService`) plus 12 integration tests that boot the
 real API against a disposable Postgres container via Testcontainers —
 covering create, redirect status codes, one-time deactivation, password
