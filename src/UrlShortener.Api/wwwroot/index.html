@@ -324,6 +324,43 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+
+  .feature-card .icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .feature-card h3 {
+    font-size: 14px;
+    margin: 0 0 6px;
+  }
+
+  .feature-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  @media (max-width: 520px) {
+    .features {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
@@ -400,7 +437,23 @@
     </div>
   </section>
 
-  <section id="features-section"></section>
+  <section class="features" aria-label="Key features">
+    <div class="feature-card">
+      <div class="icon" aria-hidden="true">⏳</div>
+      <h3>Expiry</h3>
+      <p>Set a link to stop working automatically at a chosen date and time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" aria-hidden="true">🎯</div>
+      <h3>One-time use</h3>
+      <p>Deactivate a link automatically after its first successful click.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" aria-hidden="true">🔒</div>
+      <h3>Password protection</h3>
+      <p>Require a password before visitors are redirected to the target.</p>
+    </div>
+  </section>
 
   <footer>
     <a href="https://github.com/AlperCna/url-shortener-api" target="_blank" rel="noopener">View on GitHub</a>
