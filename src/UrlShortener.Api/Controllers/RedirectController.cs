@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 using UrlShortener.Api.BackgroundProcessing;
 using UrlShortener.Core.Services;
 
@@ -71,5 +72,28 @@ public class RedirectController(
         }
 
         return Redirect(shortLink.OriginalUrl);
+    }
+
+    [HttpGet("/{code:regex(^[[0-9a-zA-Z]]{{7}}$)}/qr")]
+    [EndpointSummary("Get a QR code for the short link")]
+    [EndpointDescription("Returns a PNG QR code encoding the short URL itself (not the original URL).")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileContentResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetQrCode(string code, CancellationToken cancellationToken)
+    {
+        var shortLink = await shortLinkService.GetByCodeAsync(code, cancellationToken);
+
+        if (shortLink is null)
+        {
+            return NotFound();
+        }
+
+        var shortUrl = $"{Request.Scheme}://{Request.Host}/{shortLink.Code}";
+
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(shortUrl, QRCodeGenerator.ECCLevel.Q);
+        var png = new PngByteQRCode(qrCodeData).GetGraphic(pixelsPerModule: 10);
+
+        return File(png, "image/png");
     }
 }

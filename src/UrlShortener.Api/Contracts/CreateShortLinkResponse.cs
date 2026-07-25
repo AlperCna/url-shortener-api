@@ -7,4 +7,5 @@ public record CreateShortLinkResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? ExpiresAt,
     bool IsOneTime,
-    bool HasPassword);
+    bool HasPassword,
+    string QrCodeUrl);

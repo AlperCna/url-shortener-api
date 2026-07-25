@@ -57,7 +57,8 @@ public class LinksController(IShortLinkService shortLinkService, TimeProvider ti
             shortLink.CreatedAt,
             shortLink.ExpiresAt,
             shortLink.IsOneTime,
-            shortLink.HasPassword);
+            shortLink.HasPassword,
+            $"{shortUrl}/qr");
 
         return Created(shortUrl, response);
     }

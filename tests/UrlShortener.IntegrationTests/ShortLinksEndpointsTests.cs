@@ -26,6 +26,29 @@ public class ShortLinksEndpointsTests(ApiFactoryFixture factory)
         body!.Code.Should().HaveLength(7);
         body.OriginalUrl.Should().Be("https://example.com/a/b/c");
         body.ShortUrl.Should().EndWith(body.Code);
+        body.QrCodeUrl.Should().Be($"{body.ShortUrl}/qr");
+    }
+
+    [Fact]
+    public async Task GetQrCode_ForExistingCode_ReturnsPng()
+    {
+        var created = await CreateLinkAsync("https://example.com/qr-target");
+
+        var response = await _client.GetAsync($"/{created.Code}/qr");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        // PNG file signature: 89 50 4E 47 0D 0A 1A 0A
+        bytes.Take(8).Should().Equal(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+    }
+
+    [Fact]
+    public async Task GetQrCode_ForUnknownCode_ReturnsNotFound()
+    {
+        var response = await _client.GetAsync("/zzzzzzz/qr");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
