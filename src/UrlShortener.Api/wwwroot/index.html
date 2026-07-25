@@ -17,6 +17,26 @@
     --danger: #dc2626;
     --danger-bg: #fef2f2;
     --code-bg: #f1f2f7;
+    --badge-active-bg: #dcfce7;
+    --badge-active-text: #15803d;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14151f;
+      --surface: #1c1e2b;
+      --text: #e8e9f0;
+      --text-muted: #9a9dae;
+      --border: #2c2e3e;
+      --accent: #818cf8;
+      --accent-hover: #6366f1;
+      --accent-text: #14151f;
+      --danger: #f87171;
+      --danger-bg: #3a1d1d;
+      --code-bg: #23253470;
+      --badge-active-bg: #14351f;
+      --badge-active-text: #4ade80;
+    }
   }
 
   * { box-sizing: border-box; }
@@ -237,6 +257,20 @@
     height: 96px;
     border-radius: 8px;
     border: 1px solid var(--border);
+    background: #fff;
+    padding: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .result-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .result-meta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 
   .result-stats {
@@ -307,8 +341,8 @@
   }
 
   .badge.active {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--badge-active-bg);
+    color: var(--badge-active-text);
   }
 
   .badge.inactive {
