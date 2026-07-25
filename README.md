@@ -14,6 +14,7 @@ request after a while can take 30-50s to wake it back up.
 
 - `POST /api/links` — shorten a URL
 - `GET /{code}` — redirect to the original URL (`302`)
+- `GET /{code}/qr` — a PNG QR code for the short link
 - `GET /api/links/{code}/stats` — click count and current state
 - `DELETE /api/links/{code}` — remove a link
 - **Expiring links** — `expiresAt`; requests to an expired link return `410 Gone`
@@ -65,6 +66,7 @@ flowchart LR
 |---|---|---|
 | `POST` | `/api/links` | Create a short link |
 | `GET` | `/{code}` | Redirect to the original URL |
+| `GET` | `/{code}/qr` | PNG QR code for the short link |
 | `GET` | `/api/links/{code}/stats` | Click count and current state |
 | `DELETE` | `/api/links/{code}` | Delete a link |
 
@@ -84,6 +86,9 @@ curl localhost:8080/api/links/aB3xK9c/stats
 
 # Password-protected link
 curl -i "localhost:8080/aB3xK9c?password=hunter2"
+
+# QR code
+curl localhost:8080/aB3xK9c/qr -o qr.png
 ```
 
 ## Running with Docker
@@ -154,11 +159,11 @@ dotnet test
 ```
 
 85 unit tests (Base62 generator, `ShortLink` domain rules, URL/SSRF
-validation, `ShortLinkService`) plus 12 integration tests that boot the
+validation, `ShortLinkService`) plus 14 integration tests that boot the
 real API against a disposable Postgres container via Testcontainers —
 covering create, redirect status codes, one-time deactivation, password
-auth, delete, SSRF rejection, and the async click counter. The integration
-tests need Docker running locally.
+auth, delete, SSRF rejection, the QR code endpoint, and the async click
+counter. The integration tests need Docker running locally.
 
 ## License
 
