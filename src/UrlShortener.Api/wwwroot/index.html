@@ -249,6 +249,81 @@
   .result-stats strong {
     color: var(--text);
   }
+
+  .lookup-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .lookup-row input {
+    flex: 1;
+  }
+
+  .lookup-row button {
+    background: var(--accent);
+    color: var(--accent-text);
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .lookup-row button:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .lookup-row button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  #stats-result {
+    margin-top: 16px;
+    display: none;
+  }
+
+  #stats-result.visible {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  #stats-result .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  #stats-result .row span:first-child {
+    color: var(--text-muted);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge.active {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .badge.inactive {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -305,7 +380,25 @@
     </div>
   </section>
 
-  <section id="stats-section" class="card" aria-labelledby="stats-heading"></section>
+  <section id="stats-section" class="card" aria-labelledby="stats-heading">
+    <h2 id="stats-heading">Check link stats</h2>
+    <form id="stats-form" class="lookup-row" novalidate>
+      <div style="flex:1">
+        <label for="stats-input" class="visually-hidden">Short code or short URL</label>
+        <input type="text" id="stats-input" name="code" placeholder="Short code or short URL, e.g. Ab3xQ9z" required>
+      </div>
+      <button type="submit" id="stats-submit">Look up</button>
+    </form>
+    <p class="error" id="stats-error" role="alert"></p>
+    <div id="stats-result">
+      <div class="row"><span>Code</span><span id="stats-code"></span></div>
+      <div class="row"><span>Clicks</span><span id="stats-clicks"></span></div>
+      <div class="row"><span>Created</span><span id="stats-created"></span></div>
+      <div class="row"><span>Expires</span><span id="stats-expires"></span></div>
+      <div class="row"><span>One-time</span><span id="stats-onetime"></span></div>
+      <div class="row"><span>Status</span><span id="stats-status"></span></div>
+    </div>
+  </section>
 
   <section id="features-section"></section>
 
@@ -413,6 +506,75 @@
       setTimeout(() => { copyBtn.textContent = original; }, 1500);
     } catch {
       showError("Could not copy to clipboard.");
+    }
+  });
+
+  const statsForm = document.getElementById("stats-form");
+  const statsInput = document.getElementById("stats-input");
+  const statsSubmit = document.getElementById("stats-submit");
+  const statsError = document.getElementById("stats-error");
+  const statsResult = document.getElementById("stats-result");
+
+  function extractCode(value) {
+    const trimmed = value.trim();
+    const match = trimmed.match(/([0-9a-zA-Z]{7})\/?$/);
+    return match ? match[1] : trimmed;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "Never";
+    return new Date(iso).toLocaleString();
+  }
+
+  statsForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    statsError.classList.remove("visible");
+    statsResult.classList.remove("visible");
+
+    const code = extractCode(statsInput.value);
+    if (!code) {
+      return;
+    }
+
+    statsSubmit.disabled = true;
+    statsSubmit.textContent = "Looking up...";
+
+    try {
+      const response = await fetch(`/api/links/${encodeURIComponent(code)}/stats`);
+
+      if (response.status === 404) {
+        statsError.textContent = "No link found for that code.";
+        statsError.classList.add("visible");
+        return;
+      }
+
+      if (!response.ok) {
+        statsError.textContent = await extractErrorMessage(response);
+        statsError.classList.add("visible");
+        return;
+      }
+
+      const data = await response.json();
+      document.getElementById("stats-code").textContent = data.code;
+      document.getElementById("stats-clicks").textContent = data.clickCount;
+      document.getElementById("stats-created").textContent = formatDate(data.createdAt);
+      document.getElementById("stats-expires").textContent = formatDate(data.expiresAt);
+      document.getElementById("stats-onetime").textContent = data.isOneTime ? "Yes" : "No";
+
+      const statusEl = document.getElementById("stats-status");
+      statusEl.innerHTML = "";
+      const badge = document.createElement("span");
+      badge.className = "badge " + (data.isActive ? "active" : "inactive");
+      badge.textContent = data.isActive ? "Active" : "Inactive";
+      statusEl.appendChild(badge);
+
+      statsResult.classList.add("visible");
+    } catch {
+      statsError.textContent = "Could not reach the server. Please try again.";
+      statsError.classList.add("visible");
+    } finally {
+      statsSubmit.disabled = false;
+      statsSubmit.textContent = "Look up";
     }
   });
 })();
