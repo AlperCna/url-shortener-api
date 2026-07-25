@@ -6,9 +6,13 @@ A URL shortener REST API built with ASP.NET Core and PostgreSQL — written as a
 portfolio project with an emphasis on clean layering, test coverage, and
 documented design decisions, not just working code.
 
-**Live demo:** [url-shortener-api-czrb.onrender.com/swagger](https://url-shortener-api-czrb.onrender.com/swagger)
+**Live demo:** [url-shortener-api-czrb.onrender.com](https://url-shortener-api-czrb.onrender.com)
 — hosted on Render's free tier, so it spins down after inactivity; the first
 request after a while can take 30-50s to wake it back up.
+
+**API docs:** [url-shortener-api-czrb.onrender.com/swagger](https://url-shortener-api-czrb.onrender.com/swagger)
+
+![Landing page](docs/landing.png)
 
 ## Features
 
