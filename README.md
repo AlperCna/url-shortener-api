@@ -12,7 +12,7 @@ request after a while can take 30-50s to wake it back up.
 
 **API docs:** [url-shortener-api-czrb.onrender.com/swagger](https://url-shortener-api-czrb.onrender.com/swagger)
 
-![Landing page](docs/landing.png)
+![Landing page](docs/landing.jpg)
 
 ## Features
 
