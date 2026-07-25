@@ -105,6 +105,13 @@ app.UseExceptionHandler();
 // (see docker-compose.yml). TLS termination is a reverse proxy's job in
 // front of this, not something the app itself should assume or enforce.
 
+// Serves wwwroot/index.html at the root URL as a landing/demo page. Must
+// run before MapControllers so "/" resolves to the static file instead of
+// falling through; doesn't collide with the redirect endpoint's "/{code}"
+// route since that requires a 7-character Base62 match.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.UseRateLimiter();
